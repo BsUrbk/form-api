@@ -2,6 +2,7 @@ import Model from "./Model";
 import IUser from "../types/IUser";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import RefreshToken from "./RefreshToken.model";
 import { randomBytes } from "crypto";
 import { rejects } from "assert";
 import { resolve } from "path";
@@ -29,12 +30,12 @@ class User extends Model {
         }else{
             const validate = await bcrypt.compare(password, user.password);
             if(validate){
-                const id = User.getUserId(user.username);
+                let RToken = await new RefreshToken(user.id).CreateToken();
                 let token = jwt.sign({user: username}, process.env.SECRET as string, {
                     expiresIn: '30m',
                     algorithm: "HS256"
                 });
-                return token;
+                return {token, RToken};
             }
         }
     }
@@ -42,7 +43,7 @@ class User extends Model {
     public static async getUserId(username: string){
         const prisma = User.getPrisma();
 
-        const id = await prisma.user.findUnique({ where: { username } })
+        const id = await prisma.user.findUnique({ where: { username }, select:{id: true} })
         .catch(err => { throw console.log(err)});
 
         return id;
@@ -62,6 +63,7 @@ class User extends Model {
         const user = await prisma.user.findUnique({
             where: { username },
             select: {
+                id: true,
                 username: true,
                 password: true
             }
@@ -87,11 +89,6 @@ class User extends Model {
 
     public async getUsers(){
         const prisma = User.getPrisma();
-
-    }
-
-
-    protected static async checkUserPassword(password: string){
 
     }
 }
