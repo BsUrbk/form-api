@@ -3,9 +3,7 @@ import IUser from "../types/IUser";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import RefreshToken from "./RefreshToken.model";
-import { randomBytes } from "crypto";
-import { rejects } from "assert";
-import { resolve } from "path";
+import prismaException from "../exceptions/prismaException";
 
 class User extends Model {
     private firstName : string;
@@ -44,7 +42,7 @@ class User extends Model {
         const prisma = User.getPrisma();
 
         const id = await prisma.user.findUnique({ where: { username }, select:{id: true} })
-        .catch(err => { throw console.log(err)});
+        .catch(err => { throw new prismaException(err)});
 
         return id;
     }
@@ -67,7 +65,7 @@ class User extends Model {
                 username: true,
                 password: true
             }
-        }).catch(err => { throw console.log(err) });
+        }).catch(err => { throw new prismaException(err) });
         return user;
     }
 
@@ -83,7 +81,7 @@ class User extends Model {
                 username: this.username,
                 password: this.password
             }
-        }).catch(err => {console.log(err)});
+        }).catch(err => { throw new prismaException(err) });
         return user;
     }
 
