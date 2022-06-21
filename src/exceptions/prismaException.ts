@@ -1,5 +1,4 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { json } from "stream/consumers";
 import Model from "../models/Model";
 
 const client = new PrismaClient();

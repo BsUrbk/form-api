@@ -1,21 +1,25 @@
 import User from '../models/User.model';
 import {Request, Response, NextFunction} from 'express';
-import { time } from 'console';
+import registerSchema from '../schemas/register.schema.json';
+import loginSchema from '../schemas/login.schema.json';
+import schemaValidator from '../middleware/schemaValidator';
 
 class AuthController{
     public async register(req: Request, res: Response, next: NextFunction){
         const data = req.body;
-        const result = await new User(data).createUser().catch(next);
+        const validate = await schemaValidator.validate(registerSchema, data);
+        const result = validate ? await new User(data).createUser().catch(next) : undefined;
         if(result){
             return res.json({response: "User successfully registered", result});
         }else{
-            return res.json({response: "Username or email is already taken"});
+            return res.json({response: "Incorrect credentials"});
         }
     }
     
     public async login(req: Request, res: Response, next: NextFunction){
         const { username, password } = req.body;
-        const result = await User.login({ username, password }).catch(next);
+        const validate = await schemaValidator.validate(loginSchema, req.body);
+        const result = validate ? await User.login({ username, password }).catch(next) : undefined;
         
         if(result){
             console.log(result);
