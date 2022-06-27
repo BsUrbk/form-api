@@ -2,9 +2,8 @@ import Model from "./Model";
 import IUser from "../types/IUser";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { randomBytes } from "crypto";
-import { rejects } from "assert";
-import { resolve } from "path";
+import RefreshToken from "./RefreshToken.model";
+import prismaException from "../exceptions/prismaException";
 
 class User extends Model {
     private firstName : string;
@@ -29,12 +28,12 @@ class User extends Model {
         }else{
             const validate = await bcrypt.compare(password, user.password);
             if(validate){
-                const id = User.getUserId(user.username);
+                let RToken = await new RefreshToken(user.id).CreateToken();
                 let token = jwt.sign({user: username}, process.env.SECRET as string, {
                     expiresIn: '30m',
                     algorithm: "HS256"
                 });
-                return token;
+                return {token, RToken};
             }
         }
     }
@@ -42,8 +41,8 @@ class User extends Model {
     public static async getUserId(username: string){
         const prisma = User.getPrisma();
 
-        const id = await prisma.user.findUnique({ where: { username } })
-        .catch(err => { throw console.log(err)});
+        const id = await prisma.user.findUnique({ where: { username }, select:{id: true} })
+        .catch(err => { throw new prismaException(err)});
 
         return id;
     }
@@ -62,10 +61,11 @@ class User extends Model {
         const user = await prisma.user.findUnique({
             where: { username },
             select: {
+                id: true,
                 username: true,
                 password: true
             }
-        }).catch(err => { throw console.log(err) });
+        }).catch(err => { throw new prismaException(err) });
         return user;
     }
 
@@ -81,17 +81,12 @@ class User extends Model {
                 username: this.username,
                 password: this.password
             }
-        }).catch(err => {console.log(err)});
+        }).catch(err => { throw new prismaException(err) });
         return user;
     }
 
     public async getUsers(){
         const prisma = User.getPrisma();
-
-    }
-
-
-    protected static async checkUserPassword(password: string){
 
     }
 }
