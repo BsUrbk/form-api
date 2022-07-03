@@ -37,7 +37,7 @@ Deploy the database
   npx prisma db push
 ```
 
-Run the api
+Run the api in dev mode
 
 ```bash
   npm run dev
