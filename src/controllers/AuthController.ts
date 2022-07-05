@@ -9,11 +9,8 @@ class AuthController{
         const data = req.body;
         const validate = await schemaValidator.validate(registerSchema, data);
         const result = validate ? await new User(data).createUser().catch(next) : undefined;
-        if(result){
-            return res.json({response: "User successfully registered", result});
-        }else{
-            return res.json({response: "Incorrect credentials"});
-        }
+        
+        return result ? res.json({response: "User successfully registered", result}) : res.json({response: "Username/e-mail is incorrect"});
     }
     
     public async login(req: Request, res: Response, next: NextFunction){
@@ -22,7 +19,6 @@ class AuthController{
         const result = validate ? await User.login({ username, password }).catch(next) : undefined;
         
         if(result){
-            console.log(result);
             return res.cookie("TOKEN", result.token,{
                 secure: false,
                 httpOnly: true,
