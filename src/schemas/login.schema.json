@@ -17,7 +17,7 @@
 			"examples": [
 				"t"
 			],
-			"pattern": "^.*$"
+			"pattern": "^[a-z0-9_-]{3,50}$"
 		},
 		"password": {
 			"$id": "#root/password", 

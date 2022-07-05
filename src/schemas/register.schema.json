@@ -40,7 +40,7 @@
         "examples": [
           "test14@test.com"
         ],
-        "pattern": "^.*$"
+        "pattern": "[^@ \\t\\r\\n]+@[^@ \\t\\r\\n]+\\.[^@ \\t\\r\\n]+"
       },
       "username": {
         "$id": "#root/username", 
@@ -50,7 +50,7 @@
         "examples": [
           "t"
         ],
-        "pattern": "^.*$"
+        "pattern": "^[a-z0-9_-]{3,50}$"
       },
       "password": {
         "$id": "#root/password", 
