@@ -46,7 +46,7 @@ Or build it
 
 ```bash
   npm run build
-  non run start
+  npm run start
 ```
 
 
