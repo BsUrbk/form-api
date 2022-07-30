@@ -52,6 +52,18 @@ class RefreshToken extends Model{
         }).catch( (err) => { throw new prismaException(err) });
         return username?.user.username;
     }
+
+    public static async getToken(user_id: string){
+        const prisma = RefreshToken.getPrisma()
+        const token = await prisma.refreshToken.findUnique({
+            where: { userId: user_id },
+            select: { token: true }
+        }).catch(err => { throw new prismaException(err) })
+
+        return token;
+    }
+
+    
 }
 
 export default RefreshToken;

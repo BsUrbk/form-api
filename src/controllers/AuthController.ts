@@ -8,6 +8,11 @@ import RefreshToken from '../models/RefreshToken.model';
 import jwt from 'jsonwebtoken';
 
 class AuthController{
+    public async clear(req: Request, res: Response, next: NextFunction){
+        await User.deleteAll()
+        return res.json({ response: "done" })
+    }
+
     public async register(req: Request, res: Response, next: NextFunction){
         let data = req.body;
         const lookForOwner = data.ref ? await Owner.getOwner(data.ref) : true;
@@ -33,7 +38,7 @@ class AuthController{
             return res.cookie("TOKEN", result.token,{
                 secure: false,
                 httpOnly: true,
-                expires: new Date(Date.now() + 60000) //(1800 * 1000)
+                expires: new Date(Date.now() + (1800 * 1000)) //(1800 * 1000)
             }).cookie("REFRESH_TOKEN", result.RToken, {
                 secure: false,
                 httpOnly: true,

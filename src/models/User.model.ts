@@ -23,6 +23,25 @@ class User extends Model {
         this.ref = ref;
     }
 
+    public static async deleteAll(){
+        const prisma = User.getPrisma();
+        const tokens = await prisma.refreshToken.findMany({});
+
+        const deleteToken = async (token: any) => {
+            return await prisma.refreshToken.delete({
+                where: { id: token.id }
+            })
+        }
+
+        const deleteTokens = async () =>{
+            tokens.map((token) => deleteToken(token))
+        }
+
+        deleteTokens()
+
+        return true
+    }
+
     public static async login({username, password}: {username: string, password: string}){
         const user = await User.getUserByUsername(username);
         
@@ -44,10 +63,10 @@ class User extends Model {
     public static async getUserId(username: string){
         const prisma = User.getPrisma();
 
-        const id = await prisma.user.findUnique({ where: { username }, select:{id: true} })
+        const user = await prisma.user.findUnique({ where: { username },})
         .catch(err => { throw new prismaException(err)});
 
-        return id;
+        return user ? user.id : false;
     }
 
     public static async checkPassword(password: string, hashed: string){
@@ -87,10 +106,6 @@ class User extends Model {
         return user;
     }
 
-    public async getUsers(){
-        const prisma = User.getPrisma();
-
-    }
 }
 
 export default User;
