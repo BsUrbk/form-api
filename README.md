@@ -23,12 +23,12 @@ Use .env.example file to create your own .env file
   docker compose up
 ```
 
-Run the installation
+Install
 
 ```bash
   npm install
 ```
-Deploy the database
+Create prisma
 
 ```bash
   npx prisma generate
@@ -37,12 +37,17 @@ Deploy the database
   npx prisma db push
 ```
 
-Run the api in dev mode
+Run the api (dev)
 
 ```bash
   npm run dev
 ```
+Or build it
 
+```bash
+  npm run build
+  non run start
+```
 
 
 ## Authors
