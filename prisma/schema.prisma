@@ -9,18 +9,31 @@ datasource db {
 
 model User {
   id            String    @id @default(uuid()) @db.Uuid
-  firstName     String    @db.VarChar(50)
-  lastName      String    @db.VarChar(50)
+  firstName     String?    @db.VarChar(50)
+  lastName      String?    @db.VarChar(50)
   email         String    @unique @db.VarChar(50)
   username      String    @unique @db.VarChar(50)
   password      String    @db.Text
   createdAt     DateTime  @default(now())
+  ref           String?    @db.VarChar(10)
+  owner         Owner?     @relation(fields: [ref], references: [ref])
   refreshToken  RefreshToken[]
+}
+
+model Owner {
+  id            String    @id @default(uuid()) @db.Uuid
+  firstName     String    @db.VarChar(50)
+  lastName      String    @db.VarChar(50)
+  email         String    @unique @db.VarChar(50)
+  link          String    @db.Text
+  createdAt     DateTime  @default(now())
+  ref           String    @unique @db.VarChar(10)
+  user          User[]
 }
 
 model RefreshToken {
   id        String    @id @default(uuid()) @db.Uuid
-  token     String
+  token     String    @unique
   userId    String    @db.Uuid
   user      User      @relation(fields: [userId], references: [id])
 }

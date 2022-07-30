@@ -6,23 +6,26 @@ import RefreshToken from "./RefreshToken.model";
 import prismaException from "../exceptions/prismaException";
 
 class User extends Model {
-    private firstName : string;
-    private lastName : string;
+    private firstName? : string;
+    private lastName? : string;
     private email : string;
     private username : string;
     private password : string;
+    private ref?: string;
 
-    constructor({firstName, lastName, email, username, password}: IUser){
+    constructor({firstName, lastName, email, username, password, ref}: IUser){
         super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.username = username;
         this.password = password;
+        this.ref = ref;
     }
 
     public static async login({username, password}: {username: string, password: string}){
         const user = await User.getUserByUsername(username);
+        
         if(!user){
             return false;  
         }else{
@@ -55,9 +58,6 @@ class User extends Model {
 
     public static async getUserByUsername(username: string){
         const prisma = User.getPrisma();
-        if(username === undefined){
-            console.log("Undefined fields");
-        }
         const user = await prisma.user.findUnique({
             where: { username },
             select: {
@@ -79,9 +79,11 @@ class User extends Model {
                 lastName: this.lastName,
                 email: this.email,
                 username: this.username,
-                password: this.password
+                password: this.password,
+                ref: this.ref
             }
         }).catch(err => { throw new prismaException(err) });
+        
         return user;
     }
 

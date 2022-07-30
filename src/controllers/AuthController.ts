@@ -1,16 +1,27 @@
 import User from '../models/User.model';
+import Owner from '../models/Owner.model';
 import {Request, Response, NextFunction} from 'express';
 import registerSchema from '../schemas/register.schema.json';
 import loginSchema from '../schemas/login.schema.json';
 import schemaValidator from '../middleware/schemaValidator';
+import RefreshToken from '../models/RefreshToken.model';
+import jwt from 'jsonwebtoken';
 
 class AuthController{
     public async register(req: Request, res: Response, next: NextFunction){
-        const data = req.body;
+        let data = req.body;
+        const lookForOwner = data.ref ? await Owner.getOwner(data.ref) : true;
         const validate = await schemaValidator.validate(registerSchema, data);
-        const result = validate ? await new User(data).createUser().catch(next) : undefined;
-        
-        return result ? res.json({response: "User successfully registered", result}) : res.json({response: "Username/e-mail is incorrect"});
+        if(validate && lookForOwner){
+            const user = await new User(data).createUser().catch(next);
+            return user ? res.json({ response: "User successfully registered" }) : res.json({ response: "Error occured" });
+        }else if(validate && !lookForOwner){
+            return res.json( {response: "Invalid affiliate" });
+        }else if(!validate){
+            return res.json({ response: "Username or e-mail is invalid"});
+        }else{
+            return res.json({ response: "Error occured" })
+        }
     }
     
     public async login(req: Request, res: Response, next: NextFunction){
@@ -22,7 +33,7 @@ class AuthController{
             return res.cookie("TOKEN", result.token,{
                 secure: false,
                 httpOnly: true,
-                expires: new Date(Date.now() + (1800 * 1000))
+                expires: new Date(Date.now() + 60000) //(1800 * 1000)
             }).cookie("REFRESH_TOKEN", result.RToken, {
                 secure: false,
                 httpOnly: true,
@@ -35,11 +46,25 @@ class AuthController{
     }
 
     public async logout(req: Request, res: Response, next: NextFunction){
-        return res.cookie("TOKEN", "", {
+        if((req.cookies.REFRESH_TOKEN && req.cookies.TOKEN) || (req.cookies.REFRESH_TOKEN && res.locals.token)){
+            try{
+                jwt.verify(req.cookies.TOKEN, process.env.SECRET as string)
+            }catch(err){
+                jwt.verify(res.locals.token, process.env.SECRET as string)
+            }
+            await RefreshToken.DeleteToken(req.cookies.REFRESH_TOKEN.token)
+        }else{
+            return res.json({response: "Invalid json web tokens"})
+        }
+        return res.cookie("TOKEN", "",{
             secure: false,
             httpOnly: true,
-            expires: new Date(Date.now()-3600)
-        }).sendStatus(200);
+            expires: new Date(Date.now() - 3600)
+        }).cookie("REFRESH_TOKEN", "",{
+            secure: false,
+            httpOnly: true,
+            expires: new Date(Date.now() - 3600)
+        }).sendStatus(200)
     }
 }
 export default AuthController;

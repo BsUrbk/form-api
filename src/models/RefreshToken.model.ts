@@ -21,10 +21,10 @@ class RefreshToken extends Model{
         return RToken;
     }
 
-    public static async DeleteToken(id: string){
+    public static async DeleteToken(token: string){
         const prisma = RefreshToken.getPrisma();
         const deletedRefreshToken = await prisma.refreshToken.delete({
-            where: { id },
+            where: { token },
             }).catch((err) => { throw new prismaException(err) });
         return deletedRefreshToken;
     }
@@ -36,6 +36,21 @@ class RefreshToken extends Model{
             select: {id: true}
         }).catch(err => { throw new prismaException(err) });
         return id;
+    }
+
+    public static async getTokenUser(token: string){
+        const prisma = RefreshToken.getPrisma();
+        const username = await prisma.refreshToken.findUnique({
+            where: { token },
+            include:{
+                user:{
+                    select:{
+                        username: true,
+                    },
+                },
+            },
+        }).catch( (err) => { throw new prismaException(err) });
+        return username?.user.username;
     }
 }
 

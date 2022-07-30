@@ -21,6 +21,8 @@ class prismaException extends Model{
                     return JSON.stringify({ error: "Username is taken" });
                 case 'P2027':
                     return JSON.stringify({ error: `Multiple errors occured... how?`})
+                default:
+                    return JSON.stringify({ error: err})
             }
         }
     }

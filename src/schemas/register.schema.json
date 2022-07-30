@@ -5,8 +5,6 @@
     "title": "Root", 
     "type": "object",
     "required": [
-      "firstName",
-      "lastName",
       "email",
       "username",
       "password"
